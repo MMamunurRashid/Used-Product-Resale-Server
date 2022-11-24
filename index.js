@@ -24,6 +24,9 @@ async function run() {
       .db("recycle-clothes")
       .collection("categories");
     const usersCollection = client.db("recycle-clothes").collection("users");
+    const productsCollection = client
+      .db("recycle-clothes")
+      .collection("products");
 
     //products categories
     app.get("/categories", async (req, res) => {
@@ -44,6 +47,19 @@ async function run() {
       const query = {};
       const users = await usersCollection.find(query).toArray();
       res.send(users);
+    });
+
+    // products
+    app.post("/products", async (req, res) => {
+      const query = req.body;
+      const doctor = await productsCollection.insertOne(query);
+      res.send(doctor);
+    });
+
+    app.get("/products", async (req, res) => {
+      const query = {};
+      const result = await productsCollection.find(query).toArray();
+      res.send(result);
     });
   } finally {
   }
