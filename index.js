@@ -49,6 +49,20 @@ async function run() {
       res.send(users);
     });
 
+    app.get("/buyer", async (req, res) => {
+      const option = "Buyer";
+      const query = { option: option };
+      const buyer = await usersCollection.find(query).toArray();
+      res.send(buyer);
+    });
+
+    app.get("/seller", async (req, res) => {
+      const option = "Seller";
+      const query = { option: option };
+      const Seller = await usersCollection.find(query).toArray();
+      res.send(Seller);
+    });
+
     // products
     app.post("/products", async (req, res) => {
       const query = req.body;
