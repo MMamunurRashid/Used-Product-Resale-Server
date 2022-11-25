@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
 const app = express();
@@ -48,7 +48,7 @@ async function run() {
       const users = await usersCollection.find(query).toArray();
       res.send(users);
     });
-
+    //buyer
     app.get("/buyer", async (req, res) => {
       const option = "Buyer";
       const query = { option: option };
@@ -56,11 +56,32 @@ async function run() {
       res.send(buyer);
     });
 
+    app.delete("/buyer/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await usersCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    //seller
+    app.delete("/seller/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await usersCollection.deleteOne(query);
+      res.send(result);
+    });
     app.get("/seller", async (req, res) => {
       const option = "Seller";
       const query = { option: option };
       const Seller = await usersCollection.find(query).toArray();
       res.send(Seller);
+    });
+
+    app.get("/my-product", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const product = await productsCollection.find(query).toArray();
+      res.send(product);
     });
 
     // products
