@@ -27,6 +27,9 @@ async function run() {
     const productsCollection = client
       .db("recycle-clothes")
       .collection("products");
+    const bookingsCollection = client
+      .db("recycle-clothes")
+      .collection("bookings");
 
     //products categories
     app.get("/categories", async (req, res) => {
@@ -67,6 +70,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isAdmin: user?.role === "admin" });
+    });
+
     //buyer
     app.get("/buyer", async (req, res) => {
       const option = "Buyer";
@@ -98,16 +108,45 @@ async function run() {
 
     app.get("/my-product", async (req, res) => {
       const email = req.query.email;
+      // console.log(email);
       const query = { email: email };
       const product = await productsCollection.find(query).toArray();
       res.send(product);
     });
 
+    app.get("/sellerquery", async (req, res) => {
+      const email = req.query.email;
+      console.log(email);
+      const query = { email: email };
+      // console.log(query);
+      const seller = await usersCollection.findOne(query);
+      res.send(seller);
+    });
+
+    app.put("/users/seller/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          verify: "verified",
+        },
+      };
+
+      const result = await usersCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+
+      res.send(result);
+    });
+
     // products
     app.post("/products", async (req, res) => {
       const query = req.body;
-      const doctor = await productsCollection.insertOne(query);
-      res.send(doctor);
+      const product = await productsCollection.insertOne(query);
+      res.send(product);
     });
 
     app.get("/products", async (req, res) => {
@@ -122,6 +161,13 @@ async function run() {
       const query = { categories_id: id };
       const product = await productsCollection.find(query).toArray();
       res.send(product);
+    });
+
+    // bookings
+    app.post("/bookings", async (req, res) => {
+      const user = req.body;
+      const result = await bookingsCollection.insertOne(user);
+      res.send(result);
     });
   } finally {
   }
