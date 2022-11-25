@@ -163,11 +163,36 @@ async function run() {
       res.send(product);
     });
 
+    app.put("/report-product/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          report: true,
+        },
+      };
+      const result = await productsCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
     // bookings
     app.post("/bookings", async (req, res) => {
       const user = req.body;
       const result = await bookingsCollection.insertOne(user);
       res.send(result);
+    });
+    // my-order
+    app.get("/my-order", async (req, res) => {
+      const email = req.query.email;
+      // console.log(email);
+      const query = { email: email };
+      const product = await bookingsCollection.find(query).toArray();
+      res.send(product);
     });
   } finally {
   }
