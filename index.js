@@ -193,6 +193,32 @@ async function run() {
       const result = await productsCollection.deleteOne(query);
       res.send(result);
     });
+
+    // advertise
+    app.put("/advertise/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          status: "advertise",
+        },
+      };
+      const result = await productsCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    //advertise product
+    app.get("/advertise", async (req, res) => {
+      const status = "advertise";
+      const query = { status: status };
+      const advertiseProduct = await productsCollection.find(query).toArray();
+      res.send(advertiseProduct);
+    });
     // bookings
     app.post("/bookings", async (req, res) => {
       const user = req.body;
