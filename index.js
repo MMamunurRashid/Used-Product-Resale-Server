@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
-
+const stripe = require("stripe")(process.env.STRIPE_SK);
 const app = express();
 // middleware
 app.use(cors());
@@ -47,6 +47,9 @@ async function run() {
     const bookingsCollection = client
       .db("recycle-clothes")
       .collection("bookings");
+    const paymentsCollection = client
+      .db("recycle-clothes")
+      .collection("payments");
 
     // Verify Admin
     const verifyAdmin = async (req, res, next) => {
@@ -297,6 +300,13 @@ async function run() {
       const result = await bookingsCollection.insertOne(query);
       res.send(result);
     });
+
+    app.get("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const booking = await bookingsCollection.findOne(query);
+      res.send(booking);
+    });
     // my-order
     app.get("/my-order", verifyJWT, async (req, res) => {
       const email = req.query.email;
@@ -309,6 +319,50 @@ async function run() {
       const query = { email: email };
       const product = await bookingsCollection.find(query).toArray();
       res.send(product);
+    });
+
+    // payment
+    app.post("/create-payment-intent", async (req, res) => {
+      const booking = req.body;
+      const price = booking.productPrice;
+      const amount = price * 100;
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        currency: "usd",
+        amount: amount,
+        payment_method_types: ["card"],
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+    app.post("/payments", async (req, res) => {
+      const payment = req.body;
+      const result = await paymentsCollection.insertOne(payment);
+      const id = payment.bookingId;
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId,
+        },
+      };
+      const updatedResult = await bookingsCollection.updateOne(
+        filter,
+        updatedDoc
+      );
+
+      const productId = payment.productId;
+      const query = { _id: ObjectId(productId) };
+      const update = {
+        $set: {
+          status: "sold",
+        },
+      };
+      const updatedProduct = await productsCollection.updateOne(query, update);
+
+      res.send(result);
     });
   } finally {
   }
