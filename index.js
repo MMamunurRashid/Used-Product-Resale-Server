@@ -106,14 +106,14 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyJWT, async (req, res) => {
       const query = {};
       const users = await usersCollection.find(query).toArray();
       res.send(users);
     });
 
     //make admin
-    app.put("/users/admin/:id", async (req, res) => {
+    app.put("/users/admin/:id", verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: ObjectId(id) };
       const options = { upsert: true };
@@ -138,7 +138,7 @@ async function run() {
     });
 
     //buyer
-    app.get("/buyer", async (req, res) => {
+    app.get("/buyer", verifyJWT, verifyAdmin, async (req, res) => {
       const option = "Buyer";
       const query = { option: option };
       const buyer = await usersCollection.find(query).toArray();
@@ -160,7 +160,7 @@ async function run() {
       res.send(result);
     });
     // get seller
-    app.get("/seller", async (req, res) => {
+    app.get("/seller", verifyJWT, verifyAdmin, async (req, res) => {
       const option = "Seller";
       const query = { option: option };
       const Seller = await usersCollection.find(query).toArray();
@@ -238,7 +238,7 @@ async function run() {
           return p;
         }
       });
-      console.log(product);
+      // console.log(product);
       // const filter = { status: product };
       res.send(product);
     });
@@ -260,7 +260,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/reported-product", async (req, res) => {
+    app.get("/reported-product", verifyJWT, verifyAdmin, async (req, res) => {
       const report = true;
       const query = { report: report };
       const reported = await productsCollection.find(query).toArray();
