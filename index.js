@@ -50,6 +50,9 @@ async function run() {
     const paymentsCollection = client
       .db("recycle-clothes")
       .collection("payments");
+    const messagesCollection = client
+      .db("recycle-clothes")
+      .collection("messages");
 
     // Verify Admin
     const verifyAdmin = async (req, res, next) => {
@@ -369,6 +372,19 @@ async function run() {
       };
       const updatedProduct = await productsCollection.updateOne(query, update);
 
+      res.send(result);
+    });
+
+    // customer messages
+    app.post("/messages", async (req, res) => {
+      const query = req.body;
+      const result = await messagesCollection.insertOne(query);
+      res.send(result);
+    });
+
+    app.get("/messages", async (req, res) => {
+      const query = {};
+      const result = await messagesCollection.find(query).toArray();
       res.send(result);
     });
   } finally {
