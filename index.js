@@ -229,7 +229,14 @@ async function run() {
       const id = req.params.id;
       // console.log(id);
       const query = { categories_id: id };
-      const product = await productsCollection.find(query).toArray();
+      const products = await productsCollection.find(query).toArray();
+      const product = products.filter((p) => {
+        if (p.status !== "sold") {
+          return p;
+        }
+      });
+      console.log(product);
+      // const filter = { status: product };
       res.send(product);
     });
 
