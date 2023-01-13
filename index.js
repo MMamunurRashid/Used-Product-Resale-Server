@@ -228,6 +228,18 @@ async function run() {
       res.send(result);
     });
 
+    app.delete(
+      "/delete-product/:id",
+      verifyJWT,
+      verifySeller,
+      async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await productsCollection.deleteOne(query);
+        res.send(result);
+      }
+    );
+
     app.get("/category/:id", async (req, res) => {
       const id = req.params.id;
       // console.log(id);
